@@ -18,7 +18,11 @@ int main(int argc, char* argv[])
 
 	while((line = getline(&buf, &buf_size, stdin) != EOF))
 	   {
-	      printf("You typed: %s", buf);
+	      //printf("You typed: %s", buf);
+	      if(buf[0] != '\n')
+	         {
+		    printf("Unrecognized Command\n");
+		 }
 	      printf("[%s]$ ", (getcwd(buf, 1024)));
 	   }
 
