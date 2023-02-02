@@ -5,14 +5,19 @@
 #include<ctype.h>
 #include<string.h>
 
-int manipulate_input(char* buf);
+int manipulate_input(char* buf, char new_buf[][1024]);
+void exit_handle(char new_buf[][1024], int arg_counter);
+void cd_handle(char new_buf[][1024], int arg_counter);
+void exec_handle(char new_buf[][1024]);
 
 int main(int argc, char* argv[])
 {
 	char cwd[1024];
 	char* buf = NULL;
+	char new_buf[1024][1024];
 	size_t buf_size = 1024;
 	size_t line;
+	int arg_counter = 0;
 
 	if((getcwd(cwd, 1024)) == NULL)
 	   {
@@ -23,10 +28,22 @@ int main(int argc, char* argv[])
 	while((line = getline(&buf, &buf_size, stdin) != EOF))
 	   {
 	      //printf("You typed: %s", buf);
-	      manipulate_input(buf);
-	      if(buf[0] != '\n')
+	      arg_counter = manipulate_input(buf, new_buf);
+	      if(!(strcmp(new_buf[0], "exit")))
+		{
+		   exit_handle(new_buf, arg_counter);
+		}
+	      else if(!(strcmp(new_buf[0], "cd")))
+		{
+		   cd_handle(new_buf, arg_counter);
+		}
+	      else if(!(strcmp(new_buf[0], "exec")))
+		{
+		   exec_handle(new_buf);
+		}
+	      else if(buf[0] != '\n')
 	         {
-		    printf("Unrecognized Command\n");
+		    printf("Unrecognized Command: %s\n", new_buf[0]);
 		 }
 	      printf("[%s]$ ", (getcwd(buf, 1024)));
 	   }
@@ -37,11 +54,10 @@ int main(int argc, char* argv[])
 	exit(0);
 }
 
-int manipulate_input(char* buf)
+int manipulate_input(char* buf, char new_buf[][1024])
 {
 	int j =0;
 	int word = 0;
-	char new_buf[strlen(buf)][strlen(buf)]; //figure out if we should use sizeof over strlen
 
 	for(int i = 0; i < strlen(buf); i++)
 	   {
@@ -57,13 +73,45 @@ int manipulate_input(char* buf)
 		   j++;
 		}
 	   }
-	for(int i = 0; i < word; i++)
-	   {
-	      printf("%s\n", new_buf[i]);
-	   }
-	return 0;
+	return word;
+}
+void exit_handle(char new_buf[][1024], int arg_counter)
+{
+	if(arg_counter > 1)
+	 {
+	   err(1, "Exit takes no arguments\n");
+	 }
+	exit(0);
+}
+void cd_handle(char new_buf[][1024], int arg_counter)
+{
+	if(arg_counter != 2)
+	 {
+	   err(1, "cd: too many arguements\n");
+	 }
+	if((chdir(new_buf[1])))
+	 {
+	   err(1, "cd: No such file or directory\n");
+	 }
+}
+void exec_handle(char new_buf[][1024])
+{
+	/*char* args[1024*1024];
+	int k = 0;
+	for(int i = 0; i < 1024; i++)
+	 {
+	   for(int j = 0; j < 1024; j++)
+	    {
+	      *(args[k]) = new_buf[i][j];
+	      k++;
+	    }
+	 }
+	if((execv(args[0], args)))
+	 {
+	   err(1, "Exec has failed\n");
+	 }*/
+	printf("Exec\n");
 }
 /*
-	figure out how to return array and finish level 3
-	git commit merge after DO NOT MAKE ANOTHER COMMIT FOR LEVEL 3
+	figure out how to exec with paths
 */
